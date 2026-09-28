@@ -1,22 +1,24 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AdminNav } from "@/components/AdminNav";
-import { ADMIN_COOKIE, adminPasswordConfigured, verifyAdminToken } from "@/lib/auth";
+import type { ReactNode } from "react";
+import { AdminShell } from "@/components/admin/admin-shell";
+import { ADMIN_COOKIE, adminAccess, DEV_PASSWORD, verifyAdminToken } from "@/lib/auth";
+import { routes } from "@/lib/routes";
 
-export default async function PanelLayout({ children }: { children: React.ReactNode }) {
+export default async function PanelLayout({ children }: { children: ReactNode }) {
   const jar = await cookies();
-  if (!verifyAdminToken(jar.get(ADMIN_COOKIE)?.value)) redirect("/admin/prisijungti");
+  if (!verifyAdminToken(jar.get(ADMIN_COOKIE)?.value)) redirect(routes.adminLogin);
   return (
-    <div className="lg:grid lg:grid-cols-[220px_1fr]">
-      <AdminNav />
-      <div className="px-5 py-8 lg:px-10">
-        {adminPasswordConfigured() ? null : (
-          <p className="mb-6 border border-line bg-card px-4 py-3 text-sm">
-            Naudojamas pradinis slaptažodis <span className="num">mot-admin</span>. Prieš viešinant nustatykite ADMIN_PASSWORD.
+    <AdminShell
+      notice={
+        adminAccess() === "dev-default" ? (
+          <p className="notice mb-8 max-w-3xl">
+            Naudojamas kūrimo slaptažodis <span className="price">{DEV_PASSWORD}</span>. Prieš viešinant nustatykite ADMIN_PASSWORD_HASH.
           </p>
-        )}
-        {children}
-      </div>
-    </div>
+        ) : null
+      }
+    >
+      {children}
+    </AdminShell>
   );
 }

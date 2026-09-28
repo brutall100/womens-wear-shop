@@ -1,84 +1,31 @@
+/* Colours live in ./styles/palette.css – change them there. */
+@import "./styles/palette.css";
 @import "tailwindcss";
+@import "./styles/base.css";
+@import "./styles/components.css";
+@import "./styles/background.css";
 
+/* Only the palette colours exist as Tailwind classes (bg-surface, text-muted, …). */
 @theme {
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-cormorant), Georgia, "Times New Roman", serif;
-  --color-paper: #f3efe8;
-  --color-paper-2: #e6e0d6;
-  --color-ink: #1b1916;
-  --color-muted: #5e574e;
-  --color-line: #d8d0c6;
-  --color-clay: #6e3b2c;
-  --color-ok: #1d5c3a;
-  --color-danger: #8a2e2e;
-  --color-card: #fffcf8;
+  --color-*: initial;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-text);
+  --color-on-accent: var(--on-accent);
+  --color-sage: var(--accent-2);
+  --color-sage-ink: var(--accent-2-text);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
 
-body {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.5;
-  text-rendering: optimizeLegibility;
-}
-
-::selection {
-  background: #1b1916;
-  color: #f3efe8;
-}
-
-:focus-visible {
-  outline: 2px solid #1b1916;
-  outline-offset: 3px;
-}
-
-button,
-[type="button"],
-[type="submit"],
-a,
-summary,
-label[for] {
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.num {
-  font-variant-numeric: tabular-nums;
-}
-
-.skip {
-  position: absolute;
-  left: 1rem;
-  top: -4rem;
-  z-index: 50;
-  background: #1b1916;
-  color: #f3efe8;
-  padding: 0.75rem 1rem;
-}
-
-.skip:focus {
-  top: 1rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  --font-display: var(--font-besley), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 }

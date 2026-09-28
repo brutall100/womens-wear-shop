@@ -15,6 +15,11 @@ export function formatDate(iso: string): string {
   }).format(date);
 }
 
+/** 18900 -> "189,00" for price inputs. */
+export function centsToInput(cents: number): string {
+  return (cents / 100).toFixed(2).replace(".", ",");
+}
+
 export function parseEuroToCents(input: string): number | null {
   const cleaned = input.trim().replace(/\s/g, "").replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
@@ -46,4 +51,13 @@ export function slugify(input: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
+}
+
+/** Lithuanian plural: plural(1, ["modelis", "modeliai", "modelių"]) -> "modelis". */
+export function plural(n: number, [one, few, many]: [string, string, string]): string {
+  const lastTwo = n % 100;
+  const last = n % 10;
+  if (last === 1 && lastTwo !== 11) return one;
+  if (last >= 2 && last <= 9 && (lastTwo < 12 || lastTwo > 19)) return few;
+  return many;
 }

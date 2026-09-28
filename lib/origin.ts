@@ -10,10 +10,20 @@ export function appOrigin(request: Request): string {
   return new URL(request.url).origin;
 }
 
+/** Used to limit login attempts per visitor. */
+export function clientKey(request: Request): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "local";
+}
+
 export function formToRecord(form: FormData): Record<string, string> {
   const record: Record<string, string> = {};
   for (const [key, value] of form.entries()) {
     if (typeof value === "string") record[key] = value;
   }
   return record;
+}
+
+/** Order stamps are 16 hex characters. */
+export function isStamp(value: string): boolean {
+  return /^[a-f0-9]{16}$/.test(value);
 }

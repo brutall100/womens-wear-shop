@@ -1,37 +1,31 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { adminPasswordConfigured } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { LoginForm } from "@/components/admin/login-form";
+import { ADMIN_COOKIE, adminAccess, DEV_PASSWORD, verifyAdminToken } from "@/lib/auth";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = { title: "Prisijungimas" };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ klaida?: string }> }) {
-  const params = await searchParams;
+export default async function LoginPage() {
+  const jar = await cookies();
+  if (verifyAdminToken(jar.get(ADMIN_COOKIE)?.value)) redirect(routes.adminProducts);
+  const access = adminAccess();
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 py-16">
-      <Link href="/" className="font-serif text-4xl tracking-[0.18em]">
-        MOT
-      </Link>
-      <h1 className="mt-8 font-serif text-4xl">Parduotuvės valdymas</h1>
-      <p className="mt-3 text-sm text-muted">Čia keliate prekes, kainas ir aprašymus.</p>
-      {adminPasswordConfigured() ? null : (
-        <p className="mt-3 text-sm text-muted">
-          Pradinis slaptažodis: <span className="num">mot-admin</span>
-        </p>
-      )}
-      <form action="/api/admin/login" method="post" className="mt-8 grid gap-4">
-        <label className="grid gap-2 text-sm" htmlFor="password">
-          Slaptažodis
-          <input id="password" name="password" type="password" required autoComplete="current-password" className="h-12 border border-line bg-card px-3 text-base" />
-        </label>
-        {params.klaida ? (
-          <p role="alert" className="text-sm text-danger">
-            Slaptažodis netinka.
+    <LoginForm
+      disabled={access === "locked"}
+      hint={
+        access === "dev-default" ? (
+          <p className="notice">
+            Kūrimo režimas: slaptažodis <span className="price">{DEV_PASSWORD}</span>. Viešai svetainei nustatykite ADMIN_PASSWORD_HASH.
           </p>
-        ) : null}
-        <button type="submit" className="h-12 bg-ink text-sm text-paper">
-          Prisijungti
-        </button>
-      </form>
-    </main>
+        ) : access === "locked" ? (
+          <p className="notice notice--danger">
+            Prisijungimas išjungtas, nes nenustatytas <strong>ADMIN_PASSWORD_HASH</strong>. Sukurkite jį komanda{" "}
+            <span className="price">npm run hash-password</span> ir įrašykite į .env.
+          </p>
+        ) : null
+      }
+    />
   );
 }

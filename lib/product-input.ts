@@ -1,4 +1,4 @@
-import type { ProductInput } from "./db";
+import type { ProductInput } from "./types";
 import { parseEuroToCents } from "./money";
 
 export function parseProduct(body: unknown): ProductInput | { error: string } {

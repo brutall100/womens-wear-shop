@@ -1,4 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" fill="#1b1916"/>
-  <text x="16" y="21" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#f3efe8" letter-spacing="1">MOT</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- A sewing button in the "Ateljė" palette: terracotta #B5522B, linen #F3ECE2, espresso #2B211B -->
+  <style>
+    .button { fill: #b5522b; }
+    .rim { fill: none; stroke: #8a3c1e; }
+    .hole { fill: #f3ece2; }
+    @media (prefers-color-scheme: dark) {
+      .button { fill: #e07a50; }
+      .rim { stroke: #b5522b; }
+      .hole { fill: #1c1612; }
+    }
+  </style>
+  <circle class="button" cx="32" cy="32" r="30" />
+  <circle class="rim" cx="32" cy="32" r="21" stroke-width="3" stroke-dasharray="4 3.2" />
+  <circle class="hole" cx="26" cy="26" r="4" />
+  <circle class="hole" cx="38" cy="26" r="4" />
+  <circle class="hole" cx="26" cy="38" r="4" />
+  <circle class="hole" cx="38" cy="38" r="4" />
 </svg>

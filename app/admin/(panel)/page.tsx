@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { routes } from "@/lib/routes";
 
 export default function AdminIndex() {
-  redirect("/admin/prekes");
+  redirect(routes.adminProducts);
 }

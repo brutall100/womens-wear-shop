@@ -1,6 +1,6 @@
-import { SebSettingsForm } from "@/components/SettingsForms";
+import { SebSettingsForm } from "@/components/admin/settings-forms";
 import { getSetting, keyStatus, sebConfig } from "@/lib/db";
-import { SEB_GATEWAY_HINT } from "@/lib/seb";
+import { SEB_GATEWAY_HINT } from "@/lib/seb-hint";
 
 export default function SebPage() {
   const config = sebConfig();
