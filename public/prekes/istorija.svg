@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img">
+  <defs>
+    <linearGradient id="istorija-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4ece2" />
+      <stop offset="100%" stop-color="#dcc9b6" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#istorija-bg)" />
+  <g opacity="0.45">
+    <path d="M120 0 C 138 315, 102 630, 120 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M240 0 C 218 315, 262 630, 240 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M360 0 C 386 315, 334 630, 360 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M480 0 C 450 315, 510 630, 480 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M600 0 C 634 315, 566 630, 600 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M720 0 C 682 315, 758 630, 720 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M840 0 C 882 315, 798 630, 840 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M960 0 C 914 315, 1006 630, 960 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M1080 0 C 1130 315, 1030 630, 1080 900" stroke="#ad8f76" stroke-width="1" fill="none" opacity="0.35" />
+  </g>
+  <circle cx="816.0000000000001" cy="378" r="270" fill="#ad8f76" opacity="0.16" />
+  <path d="M0 702 C 420 612, 744 810, 1200 666 L 1200 900 L 0 900 Z" fill="#ad8f76" opacity="0.2" />
+</svg>

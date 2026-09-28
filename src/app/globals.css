@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  /* Spalvos – šilti natūralūs atspalviai, molio akcentas */
+  --color-cream: #faf6f1;
+  --color-sand: #f2ebe2;
+  --color-shell: #ffffff;
+  --color-ink: #2a2320;
+  --color-muted: #7d7069;
+  --color-line: #e6dcd1;
+  --color-clay: #b06a53;
+  --color-clay-dark: #94553f;
+  --color-clay-soft: #f4e6e0;
+  --color-sage: #6f7f6a;
+  --color-success: #3f7d58;
+  --color-danger: #b23b3b;
+
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 2px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: var(--color-clay-soft);
+  }
+}
+
+@layer components {
+  .eyebrow {
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.375rem;
+  }
+
+  .field {
+    width: 100%;
+    border: 1px solid var(--color-line);
+    background-color: var(--color-shell);
+    padding: 0.625rem 0.75rem;
+    font-size: 0.9375rem;
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .field:focus {
+    border-color: var(--color-clay);
+    box-shadow: 0 0 0 3px var(--color-clay-soft);
+  }
+
+  .field::placeholder {
+    color: #b6aaa1;
+  }
+
+  .link-underline {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--color-line);
+    transition: text-decoration-color 0.15s ease;
+  }
+
+  .link-underline:hover {
+    text-decoration-color: var(--color-clay);
+  }
+}
+
+/* Sklandus nuotraukų priartėjimas kortelėse */
+.zoom-media img {
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.zoom-media:hover img {
+  transform: scale(1.04);
+}

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1100" viewBox="0 0 1800 1100" role="img">
+  <defs>
+    <linearGradient id="hbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f6efe6" />
+      <stop offset="52%" stop-color="#e7d7c9" />
+      <stop offset="100%" stop-color="#cbb3a3" />
+    </linearGradient>
+    <radialGradient id="hglow" cx="62%" cy="30%" r="55%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <filter id="hgrain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
+      <feColorMatrix type="saturate" values="0" />
+      <feComponentTransfer><feFuncA type="linear" slope="0.045" /></feComponentTransfer>
+    </filter>
+  </defs>
+
+  <rect width="1800" height="1100" fill="url(#hbg)" />
+  <rect width="1800" height="1100" fill="url(#hglow)" />
+
+  <g opacity="0.4">
+    <path d="M150 0 C 168 385, 132 770, 150 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M300 0 C 278 385, 322 770, 300 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M450 0 C 476 385, 424 770, 450 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M600 0 C 570 385, 630 770, 600 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M750 0 C 784 385, 716 770, 750 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M900 0 C 862 385, 938 770, 900 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M1050 0 C 1092 385, 1008 770, 1050 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M1200 0 C 1154 385, 1246 770, 1200 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M1350 0 C 1400 385, 1300 770, 1350 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M1500 0 C 1446 385, 1554 770, 1500 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+    <path d="M1650 0 C 1708 385, 1592 770, 1650 1100" stroke="#b09984" stroke-width="1" fill="none" opacity="0.35" />
+  </g>
+
+  <path d="M1180 120 C 940 360, 900 760, 1010 1100 L 1420 1100 C 1520 760, 1430 360, 1240 120 Z" fill="#dcc7b5" opacity="0.55" />
+  <circle cx="1215" cy="150" r="78" fill="#d6bfab" opacity="0.6" />
+  <path d="M0 880 C 420 800, 760 980, 1120 900 C 1440 830, 1640 920, 1800 880 L 1800 1100 L 0 1100 Z" fill="#b8987f" opacity="0.22" />
+
+  <rect width="1800" height="1100" filter="url(#hgrain)" opacity="0.5" />
+</svg>
