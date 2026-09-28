@@ -1,23 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCart } from "@/components/cart/cart-context";
 import { site } from "@/lib/site";
-import { cn } from "@/lib/ui";
 import { formatPrice } from "@/lib/money";
 
 export type HeaderCategory = { name: string; slug: string };
 
 export function Header({ categories }: { categories: HeaderCategory[] }) {
-  const pathname = usePathname();
   const { count, setDrawerOpen, ready } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   const navLinks = [
     { href: "/parduotuve", label: "Visos prekės" },
@@ -128,21 +121,28 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className={cn(
-                    "block py-2.5 text-sm tracking-wide text-ink border-b border-line/60 last:border-0",
-                  )}
+                  onClick={() => setMenuOpen(false)}
+                  className="block border-b border-line/60 py-2.5 text-sm tracking-wide text-ink last:border-0"
                 >
                   {link.label}
                 </Link>
               </li>
             ))}
             <li>
-              <Link href="/pristatymas" className="block py-2.5 text-sm text-muted">
+              <Link
+                href="/pristatymas"
+                onClick={() => setMenuOpen(false)}
+                className="block py-2.5 text-sm text-muted"
+              >
                 Pristatymas ir grąžinimas
               </Link>
             </li>
             <li>
-              <Link href="/kontaktai" className="block py-2.5 text-sm text-muted">
+              <Link
+                href="/kontaktai"
+                onClick={() => setMenuOpen(false)}
+                className="block py-2.5 text-sm text-muted"
+              >
                 Kontaktai
               </Link>
             </li>

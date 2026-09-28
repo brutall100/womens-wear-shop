@@ -16,8 +16,6 @@ export function ProductCard({
   const soldOut =
     product.variants.length > 0 &&
     product.variants.every((variant) => variant.stock <= 0);
-  const isNew =
-    Date.now() - new Date(product.createdAt).getTime() < 21 * 24 * 60 * 60 * 1000;
 
   return (
     <article className="group">
@@ -54,7 +52,7 @@ export function ProductCard({
                 Nuolaida
               </span>
             )}
-            {!onSale && isNew && (
+            {!onSale && product.isNew && (
               <span className="bg-shell px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-ink">
                 Naujiena
               </span>

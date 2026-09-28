@@ -19,26 +19,41 @@ export const productCardArgs = {
   },
 } as const;
 
+/** Kiek laiko prekė žymima „Naujiena“ ženkleliu */
+const NEW_PRODUCT_MS = 21 * 24 * 60 * 60 * 1000;
+
+function withNewFlag<T extends { createdAt: Date }>(products: T[]) {
+  const threshold = Date.now() - NEW_PRODUCT_MS;
+  return products.map((product) => ({
+    ...product,
+    isNew: product.createdAt.getTime() >= threshold,
+  }));
+}
+
 export type ProductCardData = Awaited<
   ReturnType<typeof getFeaturedProducts>
 >[number];
 
 export async function getFeaturedProducts(limit = 8) {
-  return prisma.product.findMany({
-    where: { isActive: true, isFeatured: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    take: limit,
-    ...productCardArgs,
-  });
+  return withNewFlag(
+    await prisma.product.findMany({
+      where: { isActive: true, isFeatured: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      take: limit,
+      ...productCardArgs,
+    }),
+  );
 }
 
 export async function getNewestProducts(limit = 8) {
-  return prisma.product.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-    ...productCardArgs,
-  });
+  return withNewFlag(
+    await prisma.product.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      ...productCardArgs,
+    }),
+  );
 }
 
 export type CatalogParams = {
@@ -60,24 +75,26 @@ export async function getCatalogProducts(params: CatalogParams) {
           ? [{ name: "asc" as const }]
           : [{ sortOrder: "asc" as const }, { createdAt: "desc" as const }];
 
-  return prisma.product.findMany({
-    where: {
-      isActive: true,
-      ...(categorySlug ? { category: { slug: categorySlug } } : {}),
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search } },
-              { summary: { contains: search } },
-              { description: { contains: search } },
-            ],
-          }
-        : {}),
-      ...(size ? { variants: { some: { size, stock: { gt: 0 } } } } : {}),
-    },
-    orderBy,
-    ...productCardArgs,
-  });
+  return withNewFlag(
+    await prisma.product.findMany({
+      where: {
+        isActive: true,
+        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search } },
+                { summary: { contains: search } },
+                { description: { contains: search } },
+              ],
+            }
+          : {}),
+        ...(size ? { variants: { some: { size, stock: { gt: 0 } } } } : {}),
+      },
+      orderBy,
+      ...productCardArgs,
+    }),
+  );
 }
 
 export async function getProductBySlug(slug: string) {
@@ -96,16 +113,18 @@ export async function getRelatedProducts(
   categoryId: string | null,
   limit = 4,
 ) {
-  return prisma.product.findMany({
-    where: {
-      isActive: true,
-      id: { not: productId },
-      ...(categoryId ? { categoryId } : {}),
-    },
-    take: limit,
-    orderBy: { createdAt: "desc" },
-    ...productCardArgs,
-  });
+  return withNewFlag(
+    await prisma.product.findMany({
+      where: {
+        isActive: true,
+        id: { not: productId },
+        ...(categoryId ? { categoryId } : {}),
+      },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      ...productCardArgs,
+    }),
+  );
 }
 
 export async function getActiveShippingMethods() {
