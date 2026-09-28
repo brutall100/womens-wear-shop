@@ -2,6 +2,10 @@
 
 Moteriškų drabužių parduotuvė Lietuvos rinkai. Viena kalba. Prekes, kainas ir aprašymus keliate administracijoje. Mokėjimas vyksta per SEB Bank Link (Payment Initiation v009).
 
+![MOT parduotuvė kompiuterio ekrane](docs/images/web.webp)
+
+![MOT parduotuvė telefono ekrane](docs/images/mobile.webp)
+
 ## Paleidimas
 
 Reikia Node.js 22.14 ar naujesnio.
