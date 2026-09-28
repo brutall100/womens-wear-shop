@@ -1,0 +1,241 @@
+/* Live background: pattern paper, lamp glows, a stitch being sewn and falling sewing notions.
+   Only transform and opacity are animated. Without motion (or JavaScript) it stays still. */
+
+.live-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+/* pattern paper: fine 24px grid and a bolder 120px grid */
+.live-bg__grid {
+  position: absolute;
+  inset: 0;
+  color: var(--text); /* the mask below only reads transparency */
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    linear-gradient(var(--grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
+  background-size:
+    24px 24px,
+    24px 24px,
+    120px 120px,
+    120px 120px;
+  -webkit-mask-image: radial-gradient(ellipse 95% 85% at 70% 25%, currentColor 25%, transparent 88%);
+  mask-image: radial-gradient(ellipse 95% 85% at 70% 25%, currentColor 25%, transparent 88%);
+}
+
+.live-bg__glow {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.live-bg__glow--lamp {
+  top: -34vmax;
+  right: -26vmax;
+  width: 78vmax;
+  height: 78vmax;
+  background: radial-gradient(closest-side, var(--glow-lamp), transparent);
+}
+
+.live-bg__glow--sage {
+  bottom: -34vmax;
+  left: -26vmax;
+  width: 66vmax;
+  height: 66vmax;
+  background: radial-gradient(closest-side, var(--glow-sage), transparent);
+}
+
+.live-bg__stitch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stitch-dash {
+  stroke: var(--accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.4;
+}
+
+/* ---------- sewing notions ---------- */
+.notion {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: var(--size);
+  height: var(--size);
+  opacity: var(--alpha, 0.7);
+}
+
+.notion__body {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.notion--button .notion__body {
+  --rim: color-mix(in oklab, var(--tone) 72%, var(--text));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 38%, var(--bg) 0 7.5%, transparent 9%),
+    radial-gradient(circle at 62% 38%, var(--bg) 0 7.5%, transparent 9%),
+    radial-gradient(circle at 38% 62%, var(--bg) 0 7.5%, transparent 9%),
+    radial-gradient(circle at 62% 62%, var(--bg) 0 7.5%, transparent 9%),
+    radial-gradient(circle closest-side, var(--tone) 0 57%, var(--rim) 59% 67%, var(--tone) 69%);
+  box-shadow: 0 4px 10px -5px var(--shadow);
+}
+
+.notion--pin .notion__body::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  width: 2px;
+  height: 80%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: linear-gradient(var(--muted), transparent);
+}
+
+.notion--pin .notion__body::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 34%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: inset -2px -2px 0 color-mix(in oklab, var(--tone) 70%, var(--text));
+}
+
+.notion--needle .notion__body::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+  border-radius: 2px 2px 1px 1px;
+  background: linear-gradient(var(--muted) 80%, transparent);
+}
+
+.notion--needle .notion__body::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  width: 4px;
+  height: 11%;
+  transform: translateX(-50%);
+  border: 1px solid var(--muted);
+  border-radius: 3px;
+}
+
+.notion--thread svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.notion--thread path {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---------- motion (only when the visitor allows it) ---------- */
+:root[data-motion="ok"] .live-bg__glow--lamp {
+  animation: glow-drift-a 36s ease-in-out infinite alternate;
+}
+
+:root[data-motion="ok"] .live-bg__glow--sage {
+  animation: glow-drift-b 44s ease-in-out infinite alternate;
+}
+
+:root[data-motion="ok"] .stitch-dash {
+  opacity: 0;
+  animation: sew 18s linear infinite;
+  animation-delay: calc(var(--i) * 0.18s);
+}
+
+:root[data-motion="ok"] .notion {
+  animation: notion-fall var(--fall) linear infinite;
+  animation-delay: var(--delay);
+  will-change: transform;
+}
+
+:root[data-motion="ok"] .notion__body {
+  animation: notion-sway var(--sway-time) ease-in-out infinite alternate;
+  animation-delay: var(--delay);
+}
+
+@keyframes glow-drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-9vmax, 7vmax, 0) scale(1.12);
+  }
+}
+
+@keyframes glow-drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(8vmax, -6vmax, 0) scale(0.94);
+  }
+}
+
+@keyframes sew {
+  0% {
+    opacity: 0;
+  }
+  3% {
+    opacity: 0.55;
+  }
+  68% {
+    opacity: 0.55;
+  }
+  84%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes notion-fall {
+  from {
+    transform: translate3d(0, -12vh, 0);
+  }
+  to {
+    transform: translate3d(0, 112vh, 0);
+  }
+}
+
+@keyframes notion-sway {
+  from {
+    transform: translateX(calc(var(--sway) * -1)) rotate(var(--rot-from));
+  }
+  to {
+    transform: translateX(var(--sway)) rotate(var(--rot-to));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notion {
+    display: none;
+  }
+}

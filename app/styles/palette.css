@@ -1,0 +1,69 @@
+/* =====================================================================
+   MOT palette – "Ateljė" (a tailor's studio)
+   The whole look is changed here. Every colour is written as
+   light-dark(light mode, dark mode). Contrast is checked for WCAG AA.
+   ===================================================================== */
+:root {
+  color-scheme: light dark;
+
+  /* Base */
+  --bg: light-dark(#f3ece2, #1c1612); /* page: linen / walnut */
+  --surface: light-dark(#fffaf3, #28201a); /* cards, header, forms */
+  --surface-2: light-dark(#eadfd1, #342a22); /* image placeholders, soft fills */
+  --text: light-dark(#2b211b, #f3e9dc); /* espresso / cream, 13.4:1 and 14.9:1 */
+  --muted: light-dark(#6b5a4e, #c2b09e); /* secondary text, 5.6:1 and 8.5:1 */
+
+  /* Accents */
+  --accent: light-dark(#b5522b, #e07a50); /* terracotta: buttons, badges, glow */
+  --accent-text: light-dark(#a2461f, #e88a62); /* terracotta for small text, 5.2:1 and 7:1 */
+  --on-accent: light-dark(#fffaf3, #1c1612); /* text on terracotta buttons, 4.8:1 and 6:1 */
+  --accent-2: light-dark(#6f8466, #9db38f); /* sage: second accent, marks and chalk lines */
+  --accent-2-text: light-dark(#566a4e, #a9bd9b); /* sage for small text, 5:1 and 8.9:1 */
+
+  /* States */
+  --ok: light-dark(#3e6b3a, #8fc486);
+  --danger: light-dark(#a33327, #f08a7c);
+
+  /* Shadow tint (dark mode uses a deeper black) */
+  --shadow-base: light-dark(#2b211b, #000000);
+
+  /* ---- Everything below is mixed from the colours above ---- */
+  --line: color-mix(in oklab, var(--text) 14%, transparent);
+  --line-strong: color-mix(in oklab, var(--text) 30%, transparent);
+  --shadow: color-mix(in oklab, var(--shadow-base) var(--shadow-mix), transparent);
+  --stitch: color-mix(in oklab, var(--accent) 48%, transparent);
+  --tick: color-mix(in oklab, var(--text) 38%, transparent);
+  --tick-strong: color-mix(in oklab, var(--text) 62%, transparent);
+
+  /* Live background */
+  --grid: color-mix(in oklab, var(--accent) 7%, transparent);
+  --grid-strong: color-mix(in oklab, var(--accent) 13%, transparent);
+  --glow-lamp: color-mix(in oklab, var(--accent) var(--glow-mix), transparent);
+  --glow-sage: color-mix(in oklab, var(--accent-2) var(--glow-mix), transparent);
+
+  /* Strength of glows and shadows – dark mode glows brighter */
+  --glow-mix: 30%;
+  --shadow-mix: 22%;
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 20px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --glow-mix: 42%;
+  --shadow-mix: 55%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --glow-mix: 42%;
+    --shadow-mix: 55%;
+  }
+}

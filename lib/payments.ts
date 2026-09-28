@@ -13,7 +13,6 @@ import {
   REQUEST_1012,
   RESPONSE_1111,
   RESPONSE_1911,
-  SEB_GATEWAY_HINT,
   fieldsForMac,
   formatBankAmount,
   normalizePublicKey,
@@ -65,13 +64,13 @@ export function verifyMerchantPacket(fields: Record<string, string>): boolean {
 }
 
 function bankPrivateKey(): string {
-  const config = sebConfig();
-  if (config.live) {
+  if (sebConfig().live) {
     throw new Error("Banko privatus raktas naudojamas tik bandomojoje aplinkoje");
   }
   return ensureDemoKeys().bankPrivate;
 }
 
+/** Signs a reply the way the bank would. Only used by the test bank while real keys are missing. */
 export function buildBankReply(order: Order, kind: "1111" | "1911"): Record<string, string> {
   const config = sebConfig();
   const common = {
@@ -141,8 +140,4 @@ export function applyBankResponse(params: Record<string, string>): BankResult {
   }
   markOrderPaid(stamp, params);
   return { ok: true, auto, stamp, paid: true };
-}
-
-export function suggestedGateway(): string {
-  return SEB_GATEWAY_HINT;
 }

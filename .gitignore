@@ -1,16 +1,31 @@
+# dependencies
 node_modules
+
+# Next.js build output
 .next
-tsconfig.tsbuildinfo
+out
+next-env.d.ts
+*.tsbuildinfo
+
+# local data: database, login secret, bank keys, uploaded photos
 data/*.db
 data/*.db-*
-data/*.db-journal
-data/*.db-wal
-data/*.db-shm
 data/auth-secret
 data/keys/*
 !data/keys/.gitkeep
 public/uploads/*
 !public/uploads/.gitkeep
+
+# secrets
 .env
 .env.local
+.env.*.local
 *.pem
+
+# notes for AI tools that `next dev` writes on its own
+AGENTS.md
+CLAUDE.md
+
+# system files
+.DS_Store
+Thumbs.db

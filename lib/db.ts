@@ -1,60 +1,25 @@
 import "server-only";
 
-import { randomBytes, randomUUID, X509Certificate, createPublicKey } from "node:crypto";
+import { createPublicKey, randomBytes, randomUUID, X509Certificate } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { categoriesOf, queryProducts } from "./catalog";
 import { slugify } from "./money";
 import { generateRsaPem, sepaText } from "./seb";
+import { DEFAULT_FREE_SHIPPING_CENTS, LEGACY_IMAGE_PATHS, SEED_PRODUCTS, seedTimestamp } from "./seed";
+import type {
+  CatalogQuery,
+  CheckoutCustomer,
+  Order,
+  OrderItem,
+  Product,
+  ProductImage,
+  ProductInput,
+  ShopConfig,
+} from "./types";
 
-export type ProductImage = { id: string; path: string; sort: number };
-
-export type Product = {
-  id: string;
-  slug: string;
-  name: string;
-  description: string;
-  priceCents: number;
-  category: string;
-  sizes: string[];
-  stock: number;
-  published: boolean;
-  images: ProductImage[];
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type OrderItem = {
-  id: string;
-  productId: string;
-  name: string;
-  size: string;
-  priceCents: number;
-  qty: number;
-};
-
-export type Order = {
-  id: string;
-  stamp: string;
-  status: string;
-  email: string;
-  name: string;
-  phone: string;
-  address: string;
-  city: string;
-  postal: string;
-  note: string;
-  deliveryId: string;
-  deliveryLabel: string;
-  deliveryCents: number;
-  subtotalCents: number;
-  amountCents: number;
-  vkMsg: string;
-  createdAt: string;
-  paidAt: string | null;
-  bankPayload: string | null;
-  items: OrderItem[];
-};
+export type { CheckoutCustomer, Order, OrderItem, Product, ProductImage, ProductInput } from "./types";
 
 type ProductRow = {
   id: string;
@@ -69,6 +34,8 @@ type ProductRow = {
   created_at: string;
   updated_at: string;
 };
+
+type ImageRow = ProductImage & { product_id: string };
 
 const globalForDb = globalThis as unknown as { motDb?: DatabaseSync };
 
@@ -140,8 +107,11 @@ function open(): DatabaseSync {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+    CREATE INDEX IF NOT EXISTS product_images_product ON product_images (product_id);
+    CREATE INDEX IF NOT EXISTS order_items_order ON order_items (order_id);
   `);
   seed(db);
+  migrateImagePaths(db);
   ensureDemoKeys();
   globalForDb.motDb = db;
   return db;
@@ -150,92 +120,24 @@ function open(): DatabaseSync {
 function seed(db: DatabaseSync) {
   const count = db.prepare("SELECT COUNT(*) AS n FROM products").get() as { n: number };
   if (count.n > 0) return;
-  const now = new Date().toISOString();
   const insert = db.prepare(
     `INSERT INTO products (id, slug, name, description, price_cents, category, sizes, stock, published, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
   );
-  const image = db.prepare(`INSERT INTO product_images (id, product_id, path, sort) VALUES (?, ?, ?, 0)`);
-  const items: Array<[string, string, string, number, string, string, number]> = [
-    [
-      "svarkas-grafitas",
-      "Švarkas „Grafitas“",
-      "Juodas švarkas atviru priekiu. Vidutinio ilgio rankovės, švelnus audinys. Gerai krenta ant pečių ir tinka tiek prie džinsų, tiek prie suknelės.",
-      18900,
-      "Švarkai",
-      "/seed/paltai-rukas.jpg",
-      6,
-    ],
-    [
-      "suknele-saule",
-      "Suknelė „Saulė“",
-      "Geltona suknelė plonomis petnešomis. Liemuo surišamas diržu, sijonas laisvas. Lengva nešti šiltą dieną.",
-      12900,
-      "Suknelės",
-      "/seed/sukneles-lina.jpg",
-      8,
-    ],
-    [
-      "marskiniai-balta",
-      "Marškiniai „Balta“",
-      "Balti marškiniai laisvu kirpimu. Ilgos rankovės. Galima nešioti vienus arba po švarku.",
-      7900,
-      "Marškiniai",
-      "/seed/megztiniai-molis.jpg",
-      12,
-    ],
-    [
-      "komplektas-tyluma",
-      "Komplektas „Tyluma“",
-      "Juodas viršus ir juodos kelnės. Tamsus, ramus siluetas, kai norisi vienos spalvos ir mažai detalių.",
-      15900,
-      "Komplektai",
-      "/seed/palaidines-tyluma.jpg",
-      5,
-    ],
-    [
-      "dzinsai-sviesa",
-      "Džinsai „Šviesa“",
-      "Šviesūs džinsai tiesia klešne. Aukštas liemuo, klasikinis užsegimas. Kasdieniam nešiojimui.",
-      9900,
-      "Džinsai",
-      "/seed/kelnes-asis.jpg",
-      10,
-    ],
-    [
-      "suknele-kalke",
-      "Suknelė „Kalkė“",
-      "Balta suknelė su V iškirpte ir surišamu diržu. Lengvas, šiek tiek blizgus audinys.",
-      11900,
-      "Suknelės",
-      "/seed/sijonai-kloste.jpg",
-      7,
-    ],
-    [
-      "striuke-oda",
-      "Striukė „Oda“",
-      "Ruda odinė striukė. Metalinės sagos, šoninės kišenės, trumpesnis kirpimas.",
-      24900,
-      "Striukės",
-      "/seed/striukes-siaure.jpg",
-      4,
-    ],
-    [
-      "suknele-pieva",
-      "Suknelė „Pieva“",
-      "Gėlėta suknelė plonomis petnešomis. Klostuotas sijonas, lengvas audinys, laisvas kritimas.",
-      13900,
-      "Suknelės",
-      "/seed/sukneles-vakaras.jpg",
-      6,
-    ],
-  ];
-  const sizes = JSON.stringify(["XS", "S", "M", "L"]);
-  for (const [slug, name, description, price, category, photo, stock] of items) {
+  const image = db.prepare("INSERT INTO product_images (id, product_id, path, sort) VALUES (?, ?, ?, 0)");
+  const base = Date.now();
+  SEED_PRODUCTS.forEach((item, index) => {
     const id = randomUUID();
-    insert.run(id, slug, name, description, price, category, sizes, stock, now, now);
-    image.run(randomUUID(), id, photo);
-  }
+    const at = seedTimestamp(index, base);
+    insert.run(id, item.slug, item.name, item.description, item.priceCents, item.category, JSON.stringify(item.sizes), item.stock, at, at);
+    image.run(randomUUID(), id, item.image);
+  });
+}
+
+/** Databases created by the first version point to `/seed/*.jpg`; those files are now WebP images. */
+function migrateImagePaths(db: DatabaseSync) {
+  const update = db.prepare("UPDATE product_images SET path = ? WHERE path = ?");
+  for (const [oldPath, newPath] of Object.entries(LEGACY_IMAGE_PATHS)) update.run(newPath, oldPath);
 }
 
 function mapProduct(row: ProductRow, images: ProductImage[]): Product {
@@ -262,10 +164,10 @@ function mapProduct(row: ProductRow, images: ProductImage[]): Product {
   };
 }
 
+/** node:sqlite rows have no prototype; React can only pass plain objects to the browser, so copy them. */
 function imagesFor(db: DatabaseSync, productId: string): ProductImage[] {
-  return db
-    .prepare("SELECT id, path, sort FROM product_images WHERE product_id = ? ORDER BY sort, id")
-    .all(productId) as ProductImage[];
+  const rows = db.prepare("SELECT id, path, sort FROM product_images WHERE product_id = ? ORDER BY sort, id").all(productId) as ProductImage[];
+  return rows.map((row) => ({ id: row.id, path: row.path, sort: row.sort }));
 }
 
 function uniqueSlug(db: DatabaseSync, base: string, exceptId?: string): string {
@@ -279,40 +181,39 @@ function uniqueSlug(db: DatabaseSync, base: string, exceptId?: string): string {
   }
 }
 
-export function listProducts(options?: {
-  publishedOnly?: boolean;
-  category?: string;
-  q?: string;
-  sort?: string;
-}): Product[] {
-  const db = open();
+function allProducts(db: DatabaseSync, publishedOnly: boolean, category?: string): Product[] {
   const where: string[] = [];
   const params: Array<string | number> = [];
-  if (options?.publishedOnly) where.push("published = 1");
-  if (options?.category) {
+  if (publishedOnly) {
+    where.push("published = ?");
+    params.push(1);
+  }
+  if (category) {
     where.push("category = ?");
-    params.push(options.category);
+    params.push(category);
   }
-  if (options?.q) {
-    const term = `%${options.q.replace(/[%_]/g, "")}%`;
-    where.push("(name LIKE ? OR description LIKE ? OR category LIKE ?)");
-    params.push(term, term, term);
+  const rows = db
+    .prepare(`SELECT * FROM products ${where.length ? `WHERE ${where.join(" AND ")}` : ""}`)
+    .all(...params) as ProductRow[];
+  const images = db.prepare("SELECT id, product_id, path, sort FROM product_images ORDER BY sort, id").all() as ImageRow[];
+  const byProduct = new Map<string, ProductImage[]>();
+  for (const image of images) {
+    const list = byProduct.get(image.product_id) ?? [];
+    list.push({ id: image.id, path: image.path, sort: image.sort });
+    byProduct.set(image.product_id, list);
   }
-  let order = "created_at DESC";
-  if (options?.sort === "kaina-asc") order = "price_cents ASC";
-  if (options?.sort === "kaina-desc") order = "price_cents DESC";
-  if (options?.sort === "vardas") order = "name COLLATE NOCASE ASC";
-  const sql = `SELECT * FROM products ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY ${order}`;
-  const rows = db.prepare(sql).all(...params) as ProductRow[];
-  return rows.map((row) => mapProduct(row, imagesFor(db, row.id)));
+  return rows.map((row) => mapProduct(row, byProduct.get(row.id) ?? []));
+}
+
+/** Category and visibility are filtered in SQL; search and sorting use the same code as the browser demo. */
+export function listProducts(options: CatalogQuery = {}): Product[] {
+  const db = open();
+  const products = allProducts(db, Boolean(options.publishedOnly), options.category || undefined);
+  return queryProducts(products, { q: options.q, sort: options.sort });
 }
 
 export function listCategories(): string[] {
-  const db = open();
-  const rows = db
-    .prepare("SELECT DISTINCT category FROM products WHERE published = 1 ORDER BY category")
-    .all() as Array<{ category: string }>;
-  return rows.map((row) => row.category);
+  return categoriesOf(allProducts(open(), true));
 }
 
 export function getProductBySlug(slug: string, includeUnpublished = false): Product | null {
@@ -330,16 +231,6 @@ export function getProduct(id: string): Product | null {
   return mapProduct(row, imagesFor(db, row.id));
 }
 
-export type ProductInput = {
-  name: string;
-  description: string;
-  priceCents: number;
-  category: string;
-  sizes: string[];
-  stock: number;
-  published: boolean;
-};
-
 export function createProduct(input: ProductInput): Product {
   const db = open();
   const id = randomUUID();
@@ -348,19 +239,7 @@ export function createProduct(input: ProductInput): Product {
   db.prepare(
     `INSERT INTO products (id, slug, name, description, price_cents, category, sizes, stock, published, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    id,
-    slug,
-    input.name,
-    input.description,
-    input.priceCents,
-    input.category,
-    JSON.stringify(input.sizes),
-    input.stock,
-    input.published ? 1 : 0,
-    now,
-    now,
-  );
+  ).run(id, slug, input.name, input.description, input.priceCents, input.category, JSON.stringify(input.sizes), input.stock, input.published ? 1 : 0, now, now);
   const created = getProduct(id);
   if (!created) throw new Error("Nepavyko išsaugoti prekės");
   return created;
@@ -375,18 +254,7 @@ export function updateProduct(id: string, input: ProductInput): Product | null {
     `UPDATE products
      SET slug = ?, name = ?, description = ?, price_cents = ?, category = ?, sizes = ?, stock = ?, published = ?, updated_at = ?
      WHERE id = ?`,
-  ).run(
-    slug,
-    input.name,
-    input.description,
-    input.priceCents,
-    input.category,
-    JSON.stringify(input.sizes),
-    input.stock,
-    input.published ? 1 : 0,
-    new Date().toISOString(),
-    id,
-  );
+  ).run(slug, input.name, input.description, input.priceCents, input.category, JSON.stringify(input.sizes), input.stock, input.published ? 1 : 0, new Date().toISOString(), id);
   return getProduct(id);
 }
 
@@ -404,12 +272,7 @@ export function addProductImage(productId: string, publicPath: string): ProductI
     sort: number;
   };
   const image: ProductImage = { id: randomUUID(), path: publicPath, sort: sortRow.sort + 1 };
-  db.prepare("INSERT INTO product_images (id, product_id, path, sort) VALUES (?, ?, ?, ?)").run(
-    image.id,
-    productId,
-    image.path,
-    image.sort,
-  );
+  db.prepare("INSERT INTO product_images (id, product_id, path, sort) VALUES (?, ?, ?, ?)").run(image.id, productId, image.path, image.sort);
   return image;
 }
 
@@ -427,21 +290,6 @@ function removeUpload(publicPath: string) {
   if (existsSync(file)) unlinkSync(file);
 }
 
-export type CheckoutItem = { productId: string; size: string; qty: number };
-
-export type CheckoutCustomer = {
-  email: string;
-  name: string;
-  phone: string;
-  address: string;
-  city: string;
-  postal: string;
-  note: string;
-  deliveryId: string;
-  deliveryLabel: string;
-  deliveryCents: number;
-};
-
 export function createOrder(
   customer: CheckoutCustomer,
   lines: OrderItem[],
@@ -450,7 +298,7 @@ export function createOrder(
   const db = open();
   const id = randomUUID();
   const stamp = randomBytes(8).toString("hex");
-  const vkMsg = sepaText(`MOT ${stamp}`);
+  const vkMsg = sepaText(`MOT uzsakymas ${stamp.slice(0, 8)}`);
   const now = new Date().toISOString();
   db.exec("BEGIN");
   try {
@@ -478,7 +326,7 @@ export function createOrder(
       now,
     );
     const insertItem = db.prepare(
-      `INSERT INTO order_items (id, order_id, product_id, name, size, price_cents, qty) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      "INSERT INTO order_items (id, order_id, product_id, name, size, price_cents, qty) VALUES (?, ?, ?, ?, ?, ?, ?)",
     );
     for (const line of lines) {
       insertItem.run(randomUUID(), id, line.productId, line.name, line.size, line.priceCents, line.qty);
@@ -516,9 +364,11 @@ type OrderRow = {
 };
 
 function mapOrder(db: DatabaseSync, row: OrderRow): Order {
-  const items = db
-    .prepare("SELECT id, product_id AS productId, name, size, price_cents AS priceCents, qty FROM order_items WHERE order_id = ?")
-    .all(row.id) as OrderItem[];
+  const items = (
+    db
+      .prepare("SELECT id, product_id AS productId, name, size, price_cents AS priceCents, qty FROM order_items WHERE order_id = ?")
+      .all(row.id) as OrderItem[]
+  ).map((item) => ({ ...item }));
   return {
     id: row.id,
     stamp: row.stamp,
@@ -579,12 +429,11 @@ export function markOrderPaid(stamp: string, payload: Record<string, string>): b
       .prepare("UPDATE orders SET status = 'paid', paid_at = ?, bank_payload = ? WHERE stamp = ? AND status IN ('pending', 'failed')")
       .run(new Date().toISOString(), JSON.stringify(payload), stamp);
     if (Number(result.changes) > 0) {
-      for (const item of order.items) {
-        db.prepare("UPDATE products SET stock = MAX(stock - ?, 0) WHERE id = ?").run(item.qty, item.productId);
-      }
+      const lower = db.prepare("UPDATE products SET stock = MAX(stock - ?, 0) WHERE id = ?");
+      for (const item of order.items) lower.run(item.qty, item.productId);
     }
     db.exec("COMMIT");
-    return Number(result.changes) > 0 || order.status === "paid";
+    return Number(result.changes) > 0;
   } catch (error) {
     db.exec("ROLLBACK");
     throw error;
@@ -593,9 +442,7 @@ export function markOrderPaid(stamp: string, payload: Record<string, string>): b
 
 export function markOrderFailed(stamp: string, payload: Record<string, string>): void {
   const db = open();
-  db.prepare(
-    "UPDATE orders SET status = 'failed', bank_payload = ? WHERE stamp = ? AND status = 'pending'",
-  ).run(JSON.stringify(payload), stamp);
+  db.prepare("UPDATE orders SET status = 'failed', bank_payload = ? WHERE stamp = ? AND status = 'pending'").run(JSON.stringify(payload), stamp);
 }
 
 export function getSetting(key: string): string {
@@ -609,13 +456,13 @@ export function setSetting(key: string, value: string): void {
   db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(key, value);
 }
 
-export function shopConfig() {
-  const free = Number(getSetting("free_shipping_cents") || "15000");
+export function shopConfig(): ShopConfig {
+  const free = Number(getSetting("free_shipping_cents") || String(DEFAULT_FREE_SHIPPING_CENTS));
   return {
     email: getSetting("email"),
     phone: getSetting("phone"),
     pickup: getSetting("pickup"),
-    freeShippingCents: Number.isFinite(free) ? free : 15000,
+    freeShippingCents: Number.isFinite(free) ? free : DEFAULT_FREE_SHIPPING_CENTS,
   };
 }
 
