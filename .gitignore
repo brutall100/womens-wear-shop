@@ -1,0 +1,16 @@
+node_modules
+.next
+tsconfig.tsbuildinfo
+data/*.db
+data/*.db-*
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/auth-secret
+data/keys/*
+!data/keys/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
+.env
+.env.local
+*.pem
